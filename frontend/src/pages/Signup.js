@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, {useState} from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -12,6 +12,7 @@ import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { Alert, AlertTitle, CircularProgress, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
 
 
@@ -36,17 +37,67 @@ const defaultTheme = createTheme();
 
 
 function Signup() {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
-  };
+  const [firstname, setfirstname] = useState('')
+  const [lastname, setlastname] = useState('')
+  const [email, setemail] = useState('')
+  const [roll, setroll] = useState('')
+  const [password, setpassword] = useState('')
+  const [right, setright] = useState(false)
+  const [wrong, setwrong] = useState(false)
+  const [loading, setloading] = useState(false)
 
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setloading(true);
+  
+    try {
+      const response = await fetch('http://localhost:8000/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: `${firstname} ${lastname}`,
+          email: email,
+          password: password,
+          roll: roll,
+        }),
+      });
+  
+      if (!response.ok) {
+        // Handle error responses from the server
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Something went wrong');
+        setwrong(true)
+        setright(false)
+        setloading(false)
+      }
+      
+      // Handle successful response (if needed)
+      const responseData = await response.json();
+      console.log('Successfully registered:', responseData);
+      setright(true)
+      setwrong(false)
+      setloading(false)
+      // You might want to redirect the user or perform other actions here
+    } catch (error) {
+      console.error('Error during registration:', error.message);
+      setwrong(true)
+      setright(false)
+      setloading(false)
+      // Handle error, show a message to the user, etc.
+    }
+  };
   return (
     <ThemeProvider theme={defaultTheme}>
+      {loading ? 
+          <Box sx={{ display: 'flex', position: 'absolute', minHeight: '100vh', width: '100%' , backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 98, alignItems: 'center', justifyContent: 'center' }}>
+            <CircularProgress />
+          </Box>
+          :
+          null
+          }
       <Grid container component="main" sx={{ height: '100vh' }}>
         <CssBaseline />
         <Grid
@@ -82,6 +133,7 @@ function Signup() {
                   autoComplete="given-name"
                   name="firstName"
                   required
+                  onChange={(e) => setfirstname(e.target.value)}
                   fullWidth
                   id="firstName"
                   label="First Name"
@@ -94,10 +146,28 @@ function Signup() {
                   fullWidth
                   id="lastName"
                   label="Last Name"
+                  onChange={(e) => setlastname(e.target.value)}
                   name="lastName"
                   autoComplete="family-name"
                 />
               </Grid>
+              <Grid item xs={12}>
+      <FormControl fullWidth required>
+        <InputLabel id="role-label">Role</InputLabel>
+        <Select
+          labelId="role-label"
+          id="role"
+          name="role"
+          onChange={(e) => setroll(e.target.value)}
+          autoComplete="role"
+        >
+          <MenuItem value="owner">Owner</MenuItem>
+          <MenuItem value="agent">Agent</MenuItem>
+          <MenuItem value="admin">admin</MenuItem>
+          <MenuItem value="accountant">Accountant</MenuItem>
+        </Select>
+      </FormControl>
+    </Grid>
               <Grid item xs={12}>
                 <TextField
                   required
@@ -105,6 +175,7 @@ function Signup() {
                   id="email"
                   label="Email Address"
                   name="email"
+                  onChange={(e) => setemail(e.target.value)}
                   autoComplete="email"
                 />
               </Grid>
@@ -114,6 +185,7 @@ function Signup() {
                   fullWidth
                   name="password"
                   label="Password"
+                  onChange={(e) => setpassword(e.target.value)}
                   type="password"
                   id="password"
                   autoComplete="new-password"
@@ -141,6 +213,18 @@ function Signup() {
                 </Link>
               </Grid>
             </Grid>
+            {right ? 
+            <Alert severity="success">Sign Up Successfully.</Alert>
+            :
+            null}
+            {wrong ? 
+            <Alert severity="error">
+              <AlertTitle>Error</AlertTitle>
+              error: maybe this email exists or you don't provide everything.
+            </Alert>
+            :
+            null
+          }
           </Box>
         </Grid>
       </Grid>

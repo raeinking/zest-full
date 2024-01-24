@@ -1,26 +1,27 @@
-import * as React from 'react';
-import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import MuiDrawer from '@mui/material/Drawer';
-import Box from '@mui/material/Box';
-import MuiAppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import List from '@mui/material/List';
-import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import Badge from '@mui/material/Badge';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
-import Link from '@mui/material/Link';
-import MenuIcon from '@mui/icons-material/Menu';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import { mainListItems, secondaryListItems } from '../components/listitems';
-import Chart from '../components/chart.js';
-import Deposits from '../components/deposits';
-import Orders from '../components/orders';
+  import React, {useState, useEffect} from 'react';
+  import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
+  import CssBaseline from '@mui/material/CssBaseline';
+  import MuiDrawer from '@mui/material/Drawer';
+  import Box from '@mui/material/Box';
+  import MuiAppBar from '@mui/material/AppBar';
+  import Toolbar from '@mui/material/Toolbar';
+  import List from '@mui/material/List';
+  import Typography from '@mui/material/Typography';
+  import Divider from '@mui/material/Divider';
+  import IconButton from '@mui/material/IconButton';
+  import Badge from '@mui/material/Badge';
+  import Container from '@mui/material/Container';
+  import Grid from '@mui/material/Grid';
+  import Paper from '@mui/material/Paper';
+  import MenuIcon from '@mui/icons-material/Menu';
+  import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+  import NotificationsIcon from '@mui/icons-material/Notifications';
+  import { mainListItems, secondaryListItems } from '../components/listitems';
+  import Chart from '../components/chart.js';
+  import Deposits from '../components/deposits';
+  import Orders from '../components/orders';
+  import Cookies from 'js-cookie';
+  import { CircularProgress } from '@mui/material';
 
 function Copyright(props) {
   return (
@@ -35,11 +36,14 @@ function Copyright(props) {
   );
 }
 
+
+
 const drawerWidth = 240;
 
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== 'open',
-})(({ theme, open }) => ({
+})
+(({ theme, open }) => ({
   zIndex: theme.zIndex.drawer + 1,
   transition: theme.transitions.create(['width', 'margin'], {
     easing: theme.transitions.easing.sharp,
@@ -84,20 +88,68 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
+
+
 function Home() {
-    const [open, setOpen] = React.useState(true);
+  const [token , setToken] = useState(Cookies.get('token') || null);
+  const [loading, setloading] = useState(true)
+  const [apartmetns, setApartmetns] = useState([])
+
+    const [open, setOpen] = useState(false);
     const toggleDrawer = () => {
       setOpen(!open);
     };
+    const tokenverify = async () => {
+      setloading(true);
+    
+      try {
+        const response = await fetch('http://localhost:8000/api/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            token : token
+          }),
+        });
+        
+        if (response.status == 404 ) {
+          console.log('not working');
+          window.location.href = 'http://localhost:3000/login'
+        } else{
+          setloading(false)
+        }
+      } catch (error) {
+        console.error('Error during registration:', error.message);
+        setloading(false)
+        window.location.href = 'http://localhost:3000/login'
+      }
+    };
+
+
+    useEffect(() => {
+      tokenverify();
+    }, []);
+    
+
   
     return (
+      <>
+          {loading ? 
+          <Box sx={{ display: 'flex', position: 'absolute', minHeight: '100vh', width: '100%' , backgroundColor: 'rgba(0,0,0,1)', zIndex: 2000, alignItems: 'center', justifyContent: 'center' }}>
+            <CircularProgress />
+          </Box>
+          :
+          null
+          }
       <ThemeProvider theme={defaultTheme}>
-        <Box sx={{ display: 'flex' }}>
+
+          <Box sx={{ display: 'flex' , }}>
           <CssBaseline />
           <AppBar position="absolute" open={open}>
             <Toolbar
               sx={{
-                pr: '24px', // keep right padding when drawer closed
+                pr: '24px',
               }}
             >
               <IconButton
@@ -201,6 +253,7 @@ function Home() {
           </Box>
         </Box>
       </ThemeProvider>
+            </>
     );
   }
 export default Home

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React , {useState} from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -12,8 +12,8 @@ import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-
-
+import { Alert, AlertTitle, CircularProgress } from '@mui/material';
+import Cookies from 'js-cookie';
 
 function Copyright(props) {
   return (
@@ -27,26 +27,82 @@ function Copyright(props) {
     </Typography>
   );
 }
-
-// TODO remove, this demo shouldn't need to reset the theme.
-
 const defaultTheme = createTheme();
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 function Login() {
-  const handleSubmit = (event) => {
+  const [email, setemail] = useState('')
+  const [password, setpassword] = useState('')
+  const [right, setright] = useState(false)
+  const [wrong, setwrong] = useState(false)
+  const [loading, setloading] = useState(false)
+  
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+    setloading(true);
+  
+    try {
+      const response = await fetch('http://localhost:8000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password
+        }),
+      });
+  
+      if (!response.ok) {
+        // Handle error responses from the server
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Something went wrong');
+        setwrong(true)
+        setright(false)
+        setloading(false)
+      }
+      
+      const responseData = await response.json();
+      Cookies.set('token', responseData.token) 
+      
+      setright(true)
+      setwrong(false)
+      setloading(false)
+      window.location.href = 'http://localhost:3000/'
+    } catch (error) {
+      console.error('Error during registration:', error.message);
+      setwrong(true)
+      setright(false)
+      setloading(false)
+    }
   };
+
 
   return (
     <ThemeProvider theme={defaultTheme}>
+            {loading ? 
+          <Box sx={{ display: 'flex', position: 'absolute', minHeight: '100vh', width: '100%' , backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 98, alignItems: 'center', justifyContent: 'center' }}>
+            <CircularProgress />
+          </Box>
+          :
+          null
+          }
+
       <Grid container component="main" sx={{ height: '100vh' }}>
         <CssBaseline />
         <Grid
@@ -85,6 +141,7 @@ function Login() {
                 required
                 fullWidth
                 id="email"
+                onChange={(e) => setemail(e.target.value)}
                 label="Email Address"
                 name="email"
                 autoComplete="email"
@@ -95,6 +152,7 @@ function Login() {
                 required
                 fullWidth
                 name="password"
+                onChange={(e) => setpassword(e.target.value)}
                 label="Password"
                 type="password"
                 id="password"
@@ -120,6 +178,18 @@ function Login() {
                 </Grid>
               </Grid>
               <Copyright sx={{ mt: 5 }} />
+              {right ? 
+            <Alert severity="success">Log In Successfully.</Alert>
+            :
+            null}
+            {wrong ? 
+            <Alert severity="error">
+              <AlertTitle>Error</AlertTitle>
+              error: maybe this email or password is wrong.
+            </Alert>
+            :
+            null
+          }
             </Box>
           </Box>
         </Grid>
