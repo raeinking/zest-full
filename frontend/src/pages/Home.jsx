@@ -103,29 +103,34 @@ function Home() {
       setloading(true);
     
       try {
-        const response = await fetch('http://localhost:8000/api/token', {
+        const response = await fetch('http://192.168.68.119:8000/api/token', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            token : token
+            token: token
           }),
         });
-        
-        if (response.status == 404 ) {
+      
+        if (response.status === 404) {
           console.log('not working');
-          window.location.href = 'http://localhost:3000/login'
-        } else{
-          setloading(false)
+          window.location.href = 'http://192.168.68.119:3000/login';
+        } else {
+          const responseData = await response.json(); // Parse JSON response
+          if (responseData.message === 'agent') {
+            window.location.href = 'http://192.168.68.119:3000/property';
+          } else {
+            setloading(false);
+            console.log(responseData);
+          }
         }
       } catch (error) {
         console.error('Error during registration:', error.message);
-        setloading(false)
-        window.location.href = 'http://localhost:3000/login'
+        setloading(false);
+        window.location.href = 'http://192.168.68.119:3000/login';
       }
-    };
-
+    }      
 
     useEffect(() => {
       tokenverify();
@@ -242,11 +247,11 @@ function Home() {
                   </Paper>
                 </Grid>
                 {/* Recent Orders */}
-                <Grid item xs={12}>
+                {/* <Grid item xs={12}>
                   <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                     <Orders />
                   </Paper>
-                </Grid>
+                </Grid> */}
               </Grid>
               <Copyright sx={{ pt: 4 }} />
             </Container>

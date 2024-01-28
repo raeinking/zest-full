@@ -62,7 +62,7 @@ function Add_Apartments() {
     setloading(true);
   
     try {
-      const response = await fetch('http://localhost:8000/api/token', {
+      const response = await fetch('http://192.168.68.119:8000/api/token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -74,14 +74,14 @@ function Add_Apartments() {
   
       if (response.status == 404 ) {
         console.log('not working');
-        window.location.href = 'http://localhost:3000/login'
+        window.location.href = 'http://192.168.68.119:3000/login'
       } else{
         setloading(false)
       }
     } catch (error) {
       console.error('Error during registration:', error.message);
       setloading(false)
-      window.location.href = 'http://localhost:3000/login'
+      window.location.href = 'http://192.168.68.119:3000/login'
     }
   };
 
@@ -101,7 +101,7 @@ function Add_Apartments() {
     setloading(true);
   
     try {
-      const response = await fetch('http://localhost:8000/api/add_apartment', {
+      const response = await fetch('http://192.168.68.119:8000/api/add_apartment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ function Add_Apartments() {
       setright(true)
       setwrong(false)
       setloading(false)
-      window.location.href = 'http://localhost:3000/property'
+      window.location.href = 'http://192.168.68.119:3000/property'
     } catch (error) {
       console.error('Error during registration:', error.message);
       setwrong(true)
@@ -234,10 +234,10 @@ function Add_Apartments() {
                     >
                     <MenuItem value="villa">Villa</MenuItem>
                     <MenuItem value="1 + 1">1 + 1</MenuItem>
-                    <MenuItem value="1 + 2">1 + 2</MenuItem>
-                    <MenuItem value="1 + 3">1 + 3</MenuItem>
-                    <MenuItem value="1 + 4">1 + 4</MenuItem>
-                    <MenuItem value="1 + 5">1 + 5</MenuItem>
+                    <MenuItem value="2 + 1">1 + 2</MenuItem>
+                    <MenuItem value="3 + 1">1 + 3</MenuItem>
+                    <MenuItem value="4 + 1">1 + 4</MenuItem>
+                    <MenuItem value="5 + 1">1 + 5</MenuItem>
                     </Select>
                 </FormControl>
                 </Grid>

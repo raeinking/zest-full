@@ -59,6 +59,7 @@ router.post('/login', async (req, res) => {
           process.env.JWT
       );
 
+
       res.send({ token: token });
 
   } catch (error) {
@@ -106,7 +107,12 @@ router.post('/token', async function(req, res) {
                 return res.status(404).send('error not verified');
             }
 
-            return res.status(200).send('success');
+            if (userid.roll == 'agent') {
+                return res.send({message: 'agent'})
+            } else if (userid.roll == 'owner' || userid.roll == 'Owner'){
+                return res.status(200).send('success');
+            } 
+
         });
     } catch (err) {
         console.error(err); // Log the error for debugging purposes

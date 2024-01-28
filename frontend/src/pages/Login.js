@@ -57,7 +57,7 @@ function Login() {
     setloading(true);
   
     try {
-      const response = await fetch('http://localhost:8000/api/login', {
+      const response = await fetch('http://192.168.68.119:8000/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ function Login() {
       setright(true)
       setwrong(false)
       setloading(false)
-      window.location.href = 'http://localhost:3000/'
+      window.location.href = 'http://192.168.68.119:3000/'
     } catch (error) {
       console.error('Error during registration:', error.message);
       setwrong(true)

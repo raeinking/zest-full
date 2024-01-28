@@ -54,7 +54,7 @@ function Add_project() {
     setloading(true);
   
     try {
-      const response = await fetch('http://localhost:8000/api/token', {
+      const response = await fetch('http://192.168.68.119:8000/api/token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,14 +66,14 @@ function Add_project() {
   
       if (response.status == 404 ) {
         console.log('not working');
-        window.location.href = 'http://localhost:3000/login'
+        window.location.href = 'http://192.168.68.119:3000/login'
       } else{
         setloading(false)
       }
     } catch (error) {
       console.error('Error during registration:', error.message);
       setloading(false)
-      window.location.href = 'http://localhost:3000/login'
+      window.location.href = 'http://192.168.68.119:3000/login'
     }
   };
 

@@ -1,14 +1,32 @@
+import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import MuiDrawer from '@mui/material/Drawer';
+import Box from '@mui/material/Box';
+import MuiAppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import List from '@mui/material/List';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import Badge from '@mui/material/Badge';
+import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Link from '@mui/material/Link';
+import MenuIcon from '@mui/icons-material/Menu';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import { mainListItems, secondaryListItems } from '../components/listitems';
+import Chart from '../components/chart';
+import Deposits from '../components/deposits';
+import Orders from '../components/orders';
+import Checkbox from '@mui/joy/Checkbox';
 import React, {useState, useEffect} from 'react';
 import PropTypes from 'prop-types';
-import Box from '@mui/joy/Box';
 import Table from '@mui/joy/Table';
-import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
-import Checkbox from '@mui/joy/Checkbox';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
-import IconButton from '@mui/joy/IconButton';
-import Link from '@mui/joy/Link';
 import Tooltip from '@mui/joy/Tooltip';
 import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
@@ -19,37 +37,11 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { visuallyHidden } from '@mui/utils';
 import Cookies from 'js-cookie';
-import { mainListItems, secondaryListItems } from '../components/listitems';
-import { AppBar, Badge, Divider, Drawer, List, Toolbar } from '@mui/material';
-import MuiAppBar from '@mui/material/AppBar';
-import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
-import MenuIcon from '@mui/icons-material/Menu';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import CssBaseline from '@mui/material/CssBaseline';
-import MuiDrawer from '@mui/material/Drawer';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
-import Chart from '../components/chart.js';
-import Deposits from '../components/deposits';
-import Orders from '../components/orders';
 import { CircularProgress } from '@mui/material';
+import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
+import { v4 as uuidv4 } from 'uuid';
 
 
-function createData(name, calories, fat, carbs, protein) {
-    return {
-      name,
-      calories,
-      fat,
-      carbs,
-      protein,
-    };
-  }
-  
-  function labelDisplayedRows({ from, to, count }) {
-    return `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`;
-  }
   
   function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -59,24 +51,6 @@ function createData(name, calories, fat, carbs, protein) {
       return 1;
     }
     return 0;
-  }
-  
-  function getComparator(order, orderBy) {
-    return order === 'desc'
-      ? (a, b) => descendingComparator(a, b, orderBy)
-      : (a, b) => -descendingComparator(a, b, orderBy);
-  }
-  
-  function stableSort(array, comparator) {
-    const stabilizedThis = array.map((el, index) => [el, index]);
-    stabilizedThis.sort((a, b) => {
-      const order = comparator(a[0], b[0]);
-      if (order !== 0) {
-        return order;
-      }
-      return a[1] - b[1];
-    });
-    return stabilizedThis.map((el) => el[0]);
   }
   
   const headCells = [
@@ -144,7 +118,6 @@ function createData(name, calories, fat, carbs, protein) {
                   active ? { asc: 'ascending', desc: 'descending' }[order] : undefined
                 }
               >
-                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                 <Link
                   underline="none"
                   color="neutral"
@@ -249,7 +222,70 @@ function createData(name, calories, fat, carbs, protein) {
     numSelected: PropTypes.number.isRequired,
   };
   
-  export default function Apartments() {
+
+function Copyright(props) {
+  return (
+    <Typography variant="body2" color="text.secondary" align="center" {...props}>
+      {'Copyright © '}
+      <Link color="inherit" href="https://mui.com/">
+        Your Website
+      </Link>{' '}
+      {new Date().getFullYear()}
+      {'.'}
+    </Typography>
+  );
+}
+
+const drawerWidth = 240;
+
+const AppBar = styled(MuiAppBar, {
+  shouldForwardProp: (prop) => prop !== 'open',
+})(({ theme, open }) => ({
+  zIndex: theme.zIndex.drawer + 1,
+  transition: theme.transitions.create(['width', 'margin'], {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  ...(open && {
+    marginLeft: drawerWidth,
+    width: `calc(100% - ${drawerWidth}px)`,
+    transition: theme.transitions.create(['width', 'margin'], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  }),
+}));
+
+const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
+  ({ theme, open }) => ({
+    '& .MuiDrawer-paper': {
+      position: 'relative',
+      whiteSpace: 'nowrap',
+      width: drawerWidth,
+      transition: theme.transitions.create('width', {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+      boxSizing: 'border-box',
+      ...(!open && {
+        overflowX: 'hidden',
+        transition: theme.transitions.create('width', {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.leavingScreen,
+        }),
+        width: theme.spacing(7),
+        [theme.breakpoints.up('sm')]: {
+          width: theme.spacing(9),
+        },
+      }),
+    },
+  }),
+);
+
+// TODO remove, this demo shouldn't need to reset the theme.
+const defaultTheme = createTheme();
+
+export default function Apartments() {
     const [order, setOrder] = React.useState('asc');
     const [orderBy, setOrderBy] = React.useState('calories');
     const [selected, setSelected] = React.useState([]);
@@ -258,377 +294,241 @@ function createData(name, calories, fat, carbs, protein) {
     const [apartmetns, setApartmetns] = useState([])
     const [token , setToken] = useState(Cookies.get('token') || null);
     const [loading, setloading] = useState(true)
-    const [open, setOpen] = useState(false);
-
-
-
-    const renderRows = () => {
-      return apartmetns.map((apartment) =>
-        createData(
-          apartment.build,
-          apartment.project,
-          apartment.meter,
-          apartment.type,
-          apartment.price
-        )
-      );
-    };
-
-
-    const tokenverify = async () => {
-      setloading(true);
-    
-      try {
-        const response = await fetch('http://localhost:8000/api/token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            token : token
-          }),
-        });
-        
-        if (response.status == 404 ) {
-          console.log('not working');
-          window.location.href = 'http://localhost:3000/login'
-        } else{
-          setloading(false)
-        }
-      } catch (error) {
-        console.error('Error during registration:', error.message);
-        setloading(false)
-        window.location.href = 'http://localhost:3000/login'
-      }
-    };
-
-    const toggleDrawer = () => {
-      setOpen(!open);
-    };
-
-
-
-    const getapartments = async () => {
-      setloading(true);
-      
-      try {
-        const response = await fetch('http://localhost:8000/api/all_apartment', {
-          method: 'get',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        
-        if (response.status == 404 ) {
-          console.log('not working');
-          window.location.href = 'http://localhost:3000/login'
-        } else{
-          const responseData = await response.json(); 
-          setApartmetns(responseData)
-          setloading(false)
-        }
-      } catch (error) {
-        console.error('Error during registration:', error.message);
-        setloading(false)
-        window.location.href = 'http://localhost:3000/login'
-      }
-    };
-    useEffect(() => {
-      getapartments();
-      tokenverify()
-    }, []);
-
-  
-    const handleRequestSort = (event, property) => {
-      const isAsc = orderBy === property && order === 'asc';
-      setOrder(isAsc ? 'desc' : 'asc');
-      setOrderBy(property);
-    };
-  
-    const handleSelectAllClick = (event) => {
-      if (event.target.checked) {
-        const newSelected = apartmetns.map((n) => n.name);
-        setSelected(newSelected);
-        return;
-      }
-      setSelected([]);
-    };
-  
-    const handleClick = (event, name) => {
-      const selectedIndex = selected.indexOf(name);
-      let newSelected = [];
-  
-      if (selectedIndex === -1) {
-        newSelected = newSelected.concat(selected, name);
-      } else if (selectedIndex === 0) {
-        newSelected = newSelected.concat(selected.slice(1));
-      } else if (selectedIndex === selected.length - 1) {
-        newSelected = newSelected.concat(selected.slice(0, -1));
-      } else if (selectedIndex > 0) {
-        newSelected = newSelected.concat(
-          selected.slice(0, selectedIndex),
-          selected.slice(selectedIndex + 1),
-        );
-      }
-  
-      setSelected(newSelected);
-    };
-
-    const drawerWidth = 192;
-
-    const defaultTheme = createTheme();
-
-    const AppBar = styled(MuiAppBar, {
-      shouldForwardProp: (prop) => prop !== 'close',
-    })(({ theme, open }) => ({
-      zIndex: theme.zIndex.drawer + 1,
-      transition: theme.transitions.create(['width', 'margin'], {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-      }),
-      ...(open && {
-        marginLeft: drawerWidth,
-        width: `calc(100% - ${drawerWidth}px)`,
-        transition: theme.transitions.create(['width', 'margin'], {
-          easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.enteringScreen,
-        }),
-      }),
+    const [open, setOpen] = React.useState(false);
+    const [rows, setrows] = useState([])
+      const rowsWithIds = rows.map(row => ({
+        ...row,
+        id: row._id // Generate a unique identifier for each row
     }));
     
-  
-    const handleChangePage = (newPage) => {
-      setPage(newPage);
-    };
-  
-    const handleChangeRowsPerPage = (event, newValue) => {
-      setRowsPerPage(parseInt(newValue.toString(), 10));
-      setPage(0);
-    };
-  
-    const getLabelDisplayedRowsTo = () => {
-      if (apartmetns.length === -1) {
-        return (page + 1) * rowsPerPage;
-      }
-      return rowsPerPage === -1
-        ? apartmetns.length
-        : Math.min(apartmetns.length, (page + 1) * rowsPerPage);
-    };
-  
-    const isSelected = (name) => selected.indexOf(name) !== -1;
-  
-    const emptyRows =
-      page > 0 ? Math.max(0, (1 + page) * rowsPerPage - apartmetns.length) : 0;
-  
-    return (
-      <>
-      <ThemeProvider theme={defaultTheme}>
 
-    {/* <AppBar position="absolute" open={open}>
-        <Toolbar
-          sx={{
-            pr: '24px',
-          }}
-        >
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="open drawer"
-            onClick={toggleDrawer}
+      const tokenverify = async () => {
+        setloading(true);
+      
+        try {
+          const response = await fetch('http://192.168.68.119:8000/api/token', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              token : token
+            }),
+          });
+          
+          if (response.status == 404 ) {
+            console.log('not working');
+            window.location.href = 'http://192.168.68.119:3000/login'
+          } else{
+            setloading(false)
+          }
+        } catch (error) {
+          console.error('Error during registration:', error.message);
+          setloading(false)
+          window.location.href = 'http://192.168.68.119:3000/login'
+        }
+      };
+
+  
+  
+      const getapartments = async () => {        
+        try {
+          const response = await fetch('http://192.168.68.119:8000/api/all_apartment', {
+            method: 'get',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (response.status == 404 ) {
+            console.log('not working');
+            window.location.href = 'http://192.168.68.119:3000/login'
+          } else{
+            const responseData = await response.json(); 
+            setApartmetns(responseData)
+            setrows(responseData)
+          }
+        } catch (error) {
+          console.error('Error during registration:', error.message);
+          setloading(false)
+          window.location.href = 'http://192.168.68.119:3000/login'
+        }
+      };
+      useEffect(() => {
+        getapartments();
+        tokenverify()
+      }, []);
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const toggleDrawer = () => {
+    setOpen(!open);
+  };
+
+  const columns = [
+    { field: 'build', headerName: 'Build', width: 130, align: 'left' },
+    { field: 'project', headerName: 'Project', width: 130, align: 'left' },
+    { field: 'type', headerName: 'Type', width: 80, align: 'left' },
+    {
+      field: 'meter',
+      headerName: 'Meter',
+      //   type: 'number',
+      width: 130,
+      align: 'left'
+    },
+    {
+      field: 'Owner',
+      headerName: 'Owner',
+      description: 'This column has a value getter and is not sortable.',
+      sortable: false,
+      width: 160,
+      valueGetter: (params) =>
+      `${params.row.Owner || ''}`,
+    },
+    {
+      field: 'price',
+      headerName: 'Price by $',
+      width: 130,
+      align: 'left',
+      valueGetter: (params) => {
+        const price = params.value;
+        if (price) {
+          return `$${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+        }
+        return '';
+      },
+    },
+    {
+      field: 'phone',
+      headerName: 'Phone number',
+      width: 130,
+      align: 'left',
+      renderCell: (params) => (
+        <a href={`https://wa.me/${params.value}?text=${params.row.project} ${params.row.build} want this`}  target="_blank" style={{color: 'black', textDecoration: 'none'}} rel="noopener noreferrer">
+          {params.value}
+        </a>
+      ),
+    },  ];
+    
+    
+    
+
+  return (
+    <>
+    {loading ? 
+        <Box sx={{ display: 'flex', position: 'absolute', minHeight: '100vh', width: '100%' , backgroundColor: 'rgba(0,0,0,1)', zIndex: 2000, alignItems: 'center', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+        :
+        null
+        }
+    <ThemeProvider theme={defaultTheme}>
+      <Box sx={{ display: 'flex' }}>
+        <CssBaseline />
+        <AppBar position="absolute" open={open}>
+          <Toolbar
             sx={{
-              marginRight: '36px',
-              ...(open && { display: 'none' }),
+              pr: '24px',
             }}
           >
-            <MenuIcon />
-          </IconButton>
-          <Typography
-            component="h1"
-            variant="h6"
-            color="inherit"
-            noWrap
-            sx={{ flexGrow: 1 }}
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="open drawer"
+              onClick={toggleDrawer}
+              sx={{
+                marginRight: '36px',
+                ...(open && { display: 'none' }),
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography
+              component="h1"
+              variant="h6"
+              color="inherit"
+              noWrap
+              sx={{ flexGrow: 1 }}
+            >
+              Dashboard
+            </Typography>
+            <IconButton color="inherit">
+              <Badge badgeContent={4} color="secondary">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+        <Drawer variant="permanent" open={open}>
+          <Toolbar
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              px: [1],
+            }}
           >
-            Dashboard
-          </Typography>
-          <IconButton color="inherit">
-            <Badge badgeContent={4} color="secondary">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
-        </Toolbar>
-      </AppBar> */}
-      {/* <Drawer variant="permanent" open={open}>
-        <Toolbar
+            <IconButton onClick={toggleDrawer}>
+              <ChevronLeftIcon />
+            </IconButton>
+          </Toolbar>
+          <Divider />
+          <List component="nav">
+            {mainListItems}
+            <Divider sx={{ my: 1 }} />
+            {secondaryListItems}
+          </List>
+        </Drawer>
+        <Box
+          component="main"
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            px: [1],
+            backgroundColor: (theme) =>
+              theme.palette.mode === 'light'
+                ? theme.palette.grey[100]
+                : theme.palette.grey[900],
+            flexGrow: 1,
+            height: '100vh',
+            overflow: 'auto',
           }}
         >
-          <IconButton onClick={toggleDrawer}>
-            <ChevronLeftIcon />
-          </IconButton>
-        </Toolbar>
-        <Divider style={{ display: 'none'}} />
-        <List component="nav">  
-          {mainListItems}
-          <Divider sx={{ my: 1 }} />
-          {/* {secondaryListItems} */}
-        {/* </List>  */}
-      {/* </Drawer> */}
-      {/* <Sheet
-        variant="outlined"
-        sx={{ width: '100%', boxShadow: 'sm', borderRadius: 'sm', paddingLeft: 20 }}
-      > */}
-        {/* <EnhancedTableToolbar numSelected={selected.length} /> */}
-        <Table
-          // aria-labelledby="tableTitle"
-          // hoverRow
-          // sx={{
-          //   // '--TableCell-headBackground': 'transparent',
-          //   // '--TableCell-selectedBackground': (theme) =>
-          //     // theme.vars.palette.success.softBg,
-          //   // '& thead th:nth-child(1)': {
-          //     // width: '40px',
-          //   // },
-          //   // '& thead th:nth-child(2)': {
-          //     // width: '30%',
-          //   // },
-          //   // '& tr > *:nth-child(n+3)': { textAlign: 'right' },
-          // }}
-          
-        >
-          {/* <EnhancedTableHead
-            numSelected={selected.length}
-            order={order}
-            orderBy={orderBy}
-            onSelectAllClick={handleSelectAllClick}
-            onRequestSort={handleRequestSort}
-            rowCount={apartmetns.length}
-          /> */}
-          {/* <tbody>
-            {stableSort(renderRows(), getComparator(order, orderBy))
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row, index) => {
-                const isItemSelected = isSelected(row.name);
-                const labelId = `enhanced-table-checkbox-${index}`;
-  
-                return (
-                  <tr
-                    onClick={(event) => handleClick(event, row.name)}
-                    role="checkbox"
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={row.name}
-                    // selected={isItemSelected}
-                    style={
-                      isItemSelected
-                        ? {
-                            '--TableCell-dataBackground':
-                              'var(--TableCell-selectedBackground)',
-                            '--TableCell-headBackground':
-                              'var(--TableCell-selectedBackground)',
-                          }
-                        : {}
-                    }
-                  >
-                    <th scope="row">
-                      <Checkbox
-                        checked={isItemSelected}
-                        slotProps={{
-                          input: {
-                            'aria-labelledby': labelId,
-                          },
-                        }}
-                        sx={{ verticalAlign: 'top' }}
-                      />
-                    </th>
-                    <th id={labelId} scope="row">
-                      {row.name}
-                    </th>
-                    <td>{row.calories}</td>
-                    <td>{row.fat}</td>
-                    <td>{row.carbs}</td>
-                    <td>{row.protein}</td>
-                  </tr>
-                );
-              })}
-            {emptyRows > 0 && (
-              <tr
-                style={{
-                  height: `calc(${emptyRows} * 40px)`,
-                  '--TableRow-hoverBackground': 'transparent',
-                }}
-              >
-                <td colSpan={6} aria-hidden />
-              </tr>
-            )}
-          </tbody> */}
-          {/* <tfoot>
-            <tr>
-              <td colSpan={6}>
-                {/* <Box
-                  // sx={{
-                  //   display: 'flex',
-                  //   alignItems: 'center',
-                  //   gap: 2,
-                  //   justifyContent: 'flex-end',
-                  // }}
-                >
-                  <FormControl 
-                  // orientation="horizontal" size="sm"
-                  >
-                    <FormLabel>Rows per page:</FormLabel>
-                    <Select onChange={handleChangeRowsPerPage} value={rowsPerPage}>
-                      <Option value={5}>5</Option>
-                      <Option value={10}>10</Option>
-                      <Option value={25}>25</Option>
-                    </Select>
-                  </FormControl>
-                  <Typography textAlign="center" sx={{ minWidth: 80 }}>
-                    {labelDisplayedRows({
-                      from: apartmetns.length === 0 ? 0 : page * rowsPerPage + 1,
-                      to: getLabelDisplayedRowsTo(),
-                      count: apartmetns.length === -1 ? -1 : apartmetns.length,
-                    })}
-                  </Typography>
-                  <Box 
-                  // sx={{ display: 'flex', gap: 1 }}
-                  >
-                    <IconButton
-                      // size="sm"
-                      // color="neutral"
-                      // variant="outlined"
-                      // disabled={page === 0}
-                      // onClick={() => handleChangePage(page - 1)}
-                      // sx={{ bgcolor: 'background.surface' }}
-                    >
-                      <KeyboardArrowLeftIcon />
-                    </IconButton>
-                    <IconButton
-                      size="sm"
-                      color="neutral"
-                      variant="outlined"
-                      disabled={
-                        apartmetns.length !== -1
-                          ? page >= Math.ceil(apartmetns.length / rowsPerPage) - 1
-                          : false
-                      }
-                      onClick={() => handleChangePage(page + 1)}
-                      sx={{ bgcolor: 'background.surface' }}
-                    >
-                      <KeyboardArrowRightIcon />
-                    </IconButton>
-                  </Box>
-                </Box> */}
-              {/* </td>
-            </tr> */}
-          {/* </tfoot> */} 
-        </Table>
-      {/* </Sheet> */}
-      </ThemeProvider>
-      </>
-    );
-  }
+          <Toolbar />
+          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+                <DataGrid
+                    rows={rowsWithIds}
+                    columns={columns}
+                    initialState={{
+                        pagination: {
+                            paginationModel: { page: 0, pageSize: 5 },
+                        },
+                    }}
+                    pageSizeOptions={[5, 10]}
+                    checkboxSelection
+                />
+                </Paper>
+              </Grid>
+            </Grid>
+            <Copyright sx={{ pt: 4 }} />
+          </Container>
+        </Box>
+      </Box>
+    </ThemeProvider>
+    </>
+  );
+}
